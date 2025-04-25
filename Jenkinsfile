@@ -1,6 +1,9 @@
 pipeline {
     agent any
-
+    environment {
+        AZURE_CREDENTIALS_ID = 'azure-service-principal'
+        RESOURCE_GROUP = 'examResourceGroupRG'
+    }
     stages {
         stage('Checkout') {
             steps {
