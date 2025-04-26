@@ -1,31 +1,43 @@
 pipeline {
     agent any
     environment {
-        AZURE_CREDENTIALS_ID = 'azure-service-principal'
-        RESOURCE_GROUP = 'examResourceGroupRG'
+        DOCKER_IMAGE = "akshat6215/demo-app"
+        DOCKER_CREDENTIALS_ID = "dockerhub"
     }
+
     stages {
-        stage('Checkout') {
+        stage('Checkout Code') {
             steps {
-                // Pull the latest code from GitHub
-                git 'https://github.com/Aksh6215/demo-app.git'
+                git branch: 'main',
+                    url: 'https://github.com/Aksh6215/demo-app.git'
             }
         }
+
         stage('Build Docker Image') {
             steps {
                 script {
-                    docker.build('demo-app-image')
+                    dockerImage = docker.build(DOCKER_IMAGE)
                 }
             }
         }
-        stage('Push Docker Image') {
+
+        stage('Push to Docker Hub') {
             steps {
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
-                        docker.image('demo-app-image').push()
+                    docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
+                        dockerImage.push("latest")
                     }
                 }
             }
+        }
+    }
+
+    post {
+        success {
+            echo 'Docker image pushed successfully!'
+        }
+        failure {
+            echo 'Build failed.'
         }
     }
 }
